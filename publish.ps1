@@ -1,6 +1,7 @@
-# Publishes this folder to github.com/ahmadyoussef62/riwaq-books and turns on GitHub Pages.
-# First run: creates the public repo. Later runs: uploads any new or changed books.
+# Publishes this folder to github.com/riwaqqatar/books (GitHub Pages: https://riwaqqatar.github.io/books/).
+# Run it after a new or changed book is added; it uploads everything that changed.
 $gh = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\bin\gh.exe"
+$repo = "riwaqqatar/books"
 Set-Location $PSScriptRoot
 function Fail($msg) { Write-Host ""; Write-Host "STOPPED: $msg" -ForegroundColor Red; exit 1 }
 
@@ -21,21 +22,14 @@ git add -A
 git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) { git commit -q -m "Update Riwaq Books" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" }
 
-# 3. Create the public repo the first time, otherwise just upload
-& $gh repo view ahmadyoussef62/riwaq-books --json name *> $null
-if ($LASTEXITCODE -ne 0) {
-    & $gh repo create ahmadyoussef62/riwaq-books --public --description "Riwaq stories as flipbooks" --source . --remote origin --push
-    if ($LASTEXITCODE -ne 0) { Fail "Could not create the repo on GitHub." }
-    & $gh api -X POST repos/ahmadyoussef62/riwaq-books/pages -f "source[branch]=main" -f "source[path]=/" | Out-Null
-    if ($LASTEXITCODE -ne 0) { Fail "Repo uploaded, but GitHub Pages did not switch on." }
-} else {
-    git remote get-url origin *> $null
-    if ($LASTEXITCODE -ne 0) { git remote add origin https://github.com/ahmadyoussef62/riwaq-books.git }
-    git push -u origin main
-    if ($LASTEXITCODE -ne 0) { Fail "Upload to GitHub failed." }
-}
+# 3. Upload
+git remote get-url origin *> $null
+if ($LASTEXITCODE -ne 0) { git remote add origin "https://github.com/$repo.git" } else { git remote set-url origin "https://github.com/$repo.git" }
+git push -u origin main
+if ($LASTEXITCODE -ne 0) { Fail "Upload to GitHub failed." }
 
 Write-Host ""
 Write-Host "Done. In 1-2 minutes the books are live at:" -ForegroundColor Green
-Write-Host "  https://ahmadyoussef62.github.io/riwaq-books/"
-Write-Host "  https://ahmadyoussef62.github.io/riwaq-books/saud/"
+Write-Host "  https://riwaqqatar.github.io/books/"
+Write-Host "  https://riwaqqatar.github.io/books/saud/"
+Write-Host "  https://riwaqqatar.github.io/books/bayyadti/"
